@@ -1,0 +1,59 @@
+apply plugin: 'scala'
+apply plugin: 'maven'
+
+group = 'org.podval.tools'
+jar.baseName = 'org.podval.tools.run'
+version = '0.1-SNAPSHOT'
+
+repositories {
+  jcenter()
+}
+
+dependencies {
+  zinc 'com.typesafe.zinc:zinc:0.3.13'
+  compile "org.scala-lang:scala-library:2.12.2"
+}
+
+// TODO add GIT link
+def pomConfig = {
+  description 'Recognizes how the code is being run.'
+  licenses {
+    license {
+      name = 'The Apache Software License, Version 2.0'
+      url 'http://www.apache.org/licenses/LICENSE-2.0.txt'
+      distribution 'repo'
+      comments 'A business-friendly OSS license'
+    }
+  }
+  organization {
+    name 'Podval Group'
+    url 'http://www.podval.org'
+  }
+  developers {
+    developer {
+      id 'dub'
+      name 'Leonid Dubinsky'
+      email 'dub@podval.org'
+      url 'http:dub.podval.org'
+      organization 'Podval Group'
+      organizationUrl 'http://www.podval.org'
+      roles {
+        role 'developer'
+      }
+      timezone '-5'
+    }
+  }
+}
+
+install {
+  repositories.mavenInstaller {
+    pom.project pomConfig
+  }
+}
+
+uploadArchives {
+  repositories.mavenDeployer {
+//    repository(...)
+    pom.project pomConfig
+  }
+}

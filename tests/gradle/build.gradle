@@ -1,0 +1,66 @@
+apply plugin: 'idea'
+
+idea {
+  project {
+    jdkName = '1.8'
+    vcs = 'Git'
+  }
+
+  module {
+    excludeDirs += [
+      file('.idea'),
+      file('gradle')
+    ]
+  }
+}
+
+allprojects {
+  repositories {
+    jcenter()
+    mavenLocal()
+  }
+
+  group = 'org.podval.tools'
+  version = '0.1-SNAPSHOT'
+}
+
+def scalaVersion      = '2.12.2'
+def scalaVersionMajor = '2.12'
+
+ext.lib = [
+  descriptor: 'org.podval.tools:org.podval.tools.run:latest.integration',
+  zinc      : 'com.typesafe.zinc:zinc:0.3.13',
+  scala     : "org.scala-lang:scala-library:$scalaVersion",
+  junit     : 'junit:junit:4.12',
+  scalaTest : "org.scalatest:scalatest_${scalaVersionMajor}:3.0.3"
+]
+
+project(':main') {
+  apply plugin: 'scala'
+
+  dependencies {
+    zinc lib.zinc
+    compile lib.scala, lib.descriptor
+    testImplementation lib.junit
+  }
+
+  test {
+    testLogging { showStandardStreams = true }
+  }
+
+  task run(type: JavaExec) {
+    main = 'org.podval.tools.run.Main'
+    classpath = sourceSets.main.runtimeClasspath
+  }
+}
+
+project(':webapp') {
+  apply plugin: 'scala'
+  apply plugin: 'war'
+
+  dependencies {
+    zinc lib.zinc
+    compile lib.scala, lib.descriptor, project(':main')
+    compileOnly 'javax.servlet:javax.servlet-api:3.1.0'
+  }
+}
