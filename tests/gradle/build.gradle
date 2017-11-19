@@ -24,7 +24,7 @@ allprojects {
   version = '0.1-SNAPSHOT'
 }
 
-def scalaVersion      = '2.12.2'
+def scalaVersion      = '2.12.4'
 def scalaVersionMajor = '2.12'
 
 ext.lib = [

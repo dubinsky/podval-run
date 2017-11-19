@@ -3,7 +3,7 @@ apply plugin: 'maven'
 
 group = 'org.podval.tools'
 jar.baseName = 'org.podval.tools.run'
-version = '0.1-SNAPSHOT'
+version = '0.1'
 
 repositories {
   jcenter()
@@ -11,10 +11,9 @@ repositories {
 
 dependencies {
   zinc 'com.typesafe.zinc:zinc:0.3.13'
-  compile "org.scala-lang:scala-library:2.12.2"
+  compile "org.scala-lang:scala-library:2.12.4"
 }
 
-// TODO add GIT link
 def pomConfig = {
   description 'Recognizes how the code is being run.'
   licenses {
@@ -43,6 +42,9 @@ def pomConfig = {
       timezone '-5'
     }
   }
+  scm {
+    url 'https://github.com/dubinsky/podval-run'
+  }
 }
 
 install {
@@ -51,6 +53,7 @@ install {
   }
 }
 
+// TODO change to maven-publish
 uploadArchives {
   repositories.mavenDeployer {
 //    repository(...)

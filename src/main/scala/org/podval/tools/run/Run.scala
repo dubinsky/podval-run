@@ -2,7 +2,7 @@ package org.podval.tools.run
 
 import java.io.File
 
-// TODO handle TestNG and ScalaTest.
+// TODO handle ScalaTest.
 sealed trait Run {
   def getWeb: Option[WebApp.InServer]
   final def isWeb: Boolean = getWeb.nonEmpty
@@ -56,6 +56,8 @@ object Run {
   }
 
   def get: Either[Descriptor, Run] = getDescriptor.toRun
+
+  def getProjectRoot: File = get.right.get.projectRoot.get
 
   final case class Descriptor(
     environment: Environment,
@@ -167,7 +169,6 @@ object Run {
       val result: Boolean = toolRuns.exists(_.isDebug)
       if (result && !isIdePresent) Left(Error("Debugging without IDE?")) else Right(result)
     }
-
 
     Descriptor(
       environment = environment,

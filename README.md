@@ -37,10 +37,17 @@ Maven (in "maven/main" directory):
 Import appropriate project into Idea; then:
 
 Main run
+
 Main debug
+
 Test run
+
 Test debug
+
 Web (war) run
+
 Web (war) debug
+
 Web (exploded) run
+
 Web (exploded) debug
