@@ -3,7 +3,7 @@ apply plugin: 'maven'
 
 group = 'org.podval.tools'
 jar.baseName = 'org.podval.tools.run'
-version = '0.1'
+version = '0.1.1'
 
 repositories {
   jcenter()
