@@ -18,7 +18,7 @@ object Gradle extends Tool.Build {
   protected override def getProjectRoot(directory: File): Option[File] =
     ancestors(directory)
       .find(hasFile(_, "settings.gradle"))
-      .orElse(if (!hasFile(directory, "build.gradle")) None else Some(directory))
+      .orElse(if (hasFile(directory, "build.gradle")) Some(directory) else None)
 
   protected override def getProjectRoots(environment: Environment): Set[File] = Set.empty
 

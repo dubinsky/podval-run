@@ -3,7 +3,11 @@ package org.podval.tools.run
 import java.io.File
 
 sealed trait Tool {
-  final def describe(environment: Environment, webApp: Option[WebApp]): Option[Tool.Run] = {
+  final def describe(
+    environment: Environment,
+    webApp: Option[WebApp],
+    projectRootCandidates: Set[File]
+  ): Option[Tool.Run] = {
     import Util.dropSuffix
 
     val mainClassesModules   : Set[File] = environment.directories   .flatMap(dropSuffix(_, mainClassesSuffix))
@@ -18,19 +22,23 @@ sealed trait Tool {
     }
 
     val projectRoots: Set[File] = (
-      getProjectRoots(environment) ++
+      projectRootCandidates ++ getProjectRoots(environment) ++
       mainClassesModules ++ testClassesModules ++ jarDirectoriesModules ++ webAppModule
     ).flatMap(getProjectRoot)
 
-    val result: Tool.Run = Tool.Run(
-      tool = this,
-      projectRoots = projectRoots,
-      isTest = isTest(environment) || testClassesModules.nonEmpty,
-      isAppMain = isAppMain(environment),
-      isDebug = isDebug(environment)
-    )
+    val isTestValue: Boolean = isTest(environment) || testClassesModules.nonEmpty
+    val isAppMainValue: Boolean = isAppMain(environment)
+    val isDebugValue: Boolean = isDebug(environment)
 
-    if (!isPresent(environment) && result.isEmpty) None else Some(result)
+    if (!isPresent(environment) &&
+      projectRoots.isEmpty && !isTestValue && !isAppMainValue && !isDebugValue) None else Some(Tool.Run(
+        tool = this,
+        projectRoots = projectRoots,
+        isTest = isTestValue,
+        isAppMain = isAppMainValue,
+        isDebug = isDebugValue
+      )
+    )
   }
 
   protected def explodedSuffix   : String
@@ -63,8 +71,6 @@ object Tool {
     isAppMain: Boolean,
     isDebug: Boolean
   ) {
-    def isEmpty: Boolean = projectRoots.isEmpty && !isTest && !isAppMain && !isDebug
-
     override def toString: String = {
       s"$tool:\n" +
         s"projectRoots = " + projectRoots.mkString(" ") + "\n" +

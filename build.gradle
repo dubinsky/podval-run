@@ -1,9 +1,17 @@
+plugins {
+  id "com.jfrog.bintray" version "1.7.3"
+}
+
+// apply plugin: 'java-library' - if there is an issue with https://github.com/gradle/gradle/issues/1118
 apply plugin: 'scala'
-apply plugin: 'maven'
+apply plugin: 'maven-publish'
 
 group = 'org.podval.tools'
-jar.baseName = 'org.podval.tools.run'
-version = '0.1.1'
+version = '0.1.2'
+
+// TODO package all package-related stuff (urls, names, etc.) into a structure.
+def packageDescription = 'Recognizes how the code is being run.'
+def packageName = 'org.podval.tools.run'
 
 repositories {
   jcenter()
@@ -15,10 +23,16 @@ dependencies {
 }
 
 def pomConfig = {
-  description 'Recognizes how the code is being run.'
+  description packageDescription
+  name 'podval-run'
+  url 'https://github.com/dubinsky/podval-run'
+  scm {
+    url 'https://github.com/dubinsky/podval-run'
+  }
+
   licenses {
     license {
-      name = 'The Apache Software License, Version 2.0'
+      name 'The Apache Software License, Version 2.0'
       url 'http://www.apache.org/licenses/LICENSE-2.0.txt'
       distribution 'repo'
       comments 'A business-friendly OSS license'
@@ -42,21 +56,60 @@ def pomConfig = {
       timezone '-5'
     }
   }
-  scm {
-    url 'https://github.com/dubinsky/podval-run'
+}
+
+task sourceJar(type: Jar) {
+  from sourceSets.main.allSource
+  classifier = 'sources'
+}
+
+publishing {
+  publications {
+    mavenPublication(MavenPublication) {
+      artifactId packageName
+
+      from components.java
+      artifact sourceJar
+
+      pom.withXml {
+        asNode().children().last() + pomConfig
+      }
+    }
   }
 }
 
-install {
-  repositories.mavenInstaller {
-    pom.project pomConfig
-  }
-}
+bintray {
+  user = 'dubinsky'
+  key = bintrayApiKey
 
-// TODO change to maven-publish
-uploadArchives {
-  repositories.mavenDeployer {
-//    repository(...)
-    pom.project pomConfig
+  publications = ['mavenPublication']
+
+//  dryRun = true
+  publish = true
+  override = false
+
+  pkg {
+    repo = 'org.podval'
+    name = packageName
+    licenses = ['Apache-2.0']
+
+    desc = packageDescription
+    labels = ['Scala', 'Java']
+    publicDownloadNumbers = true
+
+    websiteUrl = 'https://github.com/dubinsky/podval-run'
+    issueTrackerUrl = 'https://github.com/dubinsky/podval-run/issues'
+    vcsUrl = 'https://github.com/dubinsky/podval-run.git'
+
+    githubRepo = 'dubinsky/podval-run'
+    githubReleaseNotesFile = 'README.md'
+
+    version {
+      name = project.version
+      // desc = 'Run recognizer v0.1.2'
+      // released  = new Date()
+      // vcsTag = 'v0.1.2'
+      // attributes = ['gradle-plugin': 'com.use.less:com.use.less.gradle:gradle-useless-plugin']
+    }
   }
 }

@@ -23,9 +23,12 @@ object Idea extends Tool.Ide {
   protected override def getProjectRoots(environment: Environment): Set[File] = Set.empty
 
   protected override def isTest(environment: Environment): Boolean =
-    environment.isJarPresent("/lib/junit-rt") &&
-    environment.javaCommand.contains("com.intellij.rt.execution.junit.JUnitStarter") &&
-    environment.isPropertyPresent("idea.test.cyclic.buffer.size")
+    environment.isPropertyPresent("idea.test.cyclic.buffer.size") &&
+      (environment.javaCommand.contains("com.intellij.rt.execution.junit.JUnitStarter") &&
+       environment.isJarPresent("/lib/junit-rt")) ||
+      (environment.javaCommand.startsWith("org.testng.RemoteTestNGStarter") &&
+       environment.isJarPresent("/lib/testng-plugin"))
+
 
   protected override def isAppMain(environment: Environment): Boolean =
     // Seems to be obsolete :)

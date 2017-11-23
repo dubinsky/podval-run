@@ -122,12 +122,12 @@ object Run {
     }
   }
 
-  val buildTools: Set[Tool.Build] = Set(Gradle, Maven)
+  // TODO parameterize Run to avoid the cast
   val ides: Set[Tool.Ide] = Set(Idea)
-  val tools: Set[Tool] = buildTools ++ ides
+  val buildTools: Set[Tool.Build] = Set(Gradle, Maven)
   val appServers: Set[WebApp.Server] = Set(Tomcat)
 
-  def getDescriptor: Descriptor = {
+  lazy val getDescriptor: Descriptor = {
     import Util.dropSuffix
     import Error.atMostOne
 
@@ -149,9 +149,29 @@ object Run {
     }
 
     val webAppParameter: Option[WebApp] = webApp.fold(_ => None, value => value)
-    val toolRuns: Set[Tool.Run] = tools.flatMap(_.describe(environment, webAppParameter))
 
-    val projectRoot: Error.OrOption[File] = atMostOne("projectRoot", toolRuns.flatMap(_.projectRoots))
+    def describe[T <: Tool](tools: Set[T], projectRootCandidates: Set[File], what: String): (
+      Set[Tool.Run],
+      Error.OrOption[T],
+      Set[File]) =
+    {
+      val runs: Set[Tool.Run] = tools.flatMap(_.describe(environment, webAppParameter, projectRootCandidates))
+      val runOrError: Error.OrOption[Tool.Run] = atMostOne(what, runs)
+      val toolOrError: Error.OrOption[T] = runOrError.right.map(_.map(_.tool.asInstanceOf[T]))
+      val projectRoots: Set[File] = runOrError.getOrElse(None).map(_.projectRoots).getOrElse(Set.empty)
+      (runs, toolOrError, projectRoots)
+    }
+
+    val (ideRuns, ide, ideProjectRoots) =
+      describe[Tool.Ide](ides, Set.empty, "ide")
+
+    val (buildToolRuns, buildTool, buildToolProjectRoots) =
+      describe[Tool.Build](buildTools, ideProjectRoots, "buildTool")
+
+    val projectRoot: Error.OrOption[File] = atMostOne("projectRoot",
+      if (buildToolProjectRoots.nonEmpty) buildToolProjectRoots else ideProjectRoots)
+
+    val toolRuns: Set[Tool.Run] = ideRuns ++ buildToolRuns
 
     val isProTest: Boolean = toolRuns.exists(_.isTest)
     val isAntiTest: Boolean = toolRuns.exists(_.isAppMain)
@@ -160,12 +180,8 @@ object Run {
       if (isProTest && webAppParameter.isDefined) Left(Error("Conflicting 'isTest' and a webApp")) else
         Right(isProTest)
 
-    val toolsPresent: Set[Tool] = toolRuns.map(_.tool)
-    val buildTool: Error.OrOption[Tool.Build] = atMostOne("buildTool"  , toolsPresent.filter(_.isInstanceOf[Tool.Build]).map(_.asInstanceOf[Tool.Build]))
-    val ide: Error.OrOption[Tool.Ide] = atMostOne("ide", toolsPresent.filter(_.isInstanceOf[Tool.Ide]).map(_.asInstanceOf[Tool.Ide]))
-
     val isDebug: Error.Or[Boolean] = {
-      val isIdePresent: Boolean = ide.isRight && ide.right.get.nonEmpty
+      val isIdePresent: Boolean = ideRuns.nonEmpty
       val result: Boolean = toolRuns.exists(_.isDebug)
       if (result && !isIdePresent) Left(Error("Debugging without IDE?")) else Right(result)
     }
