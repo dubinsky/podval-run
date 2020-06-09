@@ -9,11 +9,17 @@ object Gradle extends Tool.Build {
   protected override def isPresent(environment: Environment): Boolean = false
 
   // Gradle doesn't support exploded WARs officially; this is when run from Idea.
-  protected override def explodedSuffix   : String = "/build/libs/exploded"
-  protected override def warSuffix        : String = "/build/libs/???" // TODO
-  protected override def mainClassesSuffix: String = "/build/classes/main"
-  protected override def testClassesSuffix: String = "/build/classes/test"
-  protected override def jarsSuffix       : String = "/build/libs"
+  protected override def explodedSuffix   : Seq[String] = Seq("build", "libs", "exploded")
+  protected override def warSuffix        : Seq[String] = Seq("build", "libs", "???") // TODO
+  protected override def jarsSuffix       : Seq[String] = Seq("build", "libs")
+  protected override def mainClassesSuffix: Seq[Seq[String]] = Seq(
+    Seq("build", "classes", "main"),
+    Seq("build", "classes", "*", "main") // Gradle 5+ splits classes by language
+  )
+  protected override def testClassesSuffix: Seq[Seq[String]] = Seq(
+    Seq("build", "classes", "test"),
+    Seq("build", "classes", "*", "test") // Gradle 5+ splits classes by language
+  )
 
   protected override def getProjectRoot(directory: File): Option[File] =
     ancestors(directory)

@@ -8,11 +8,11 @@ object Maven extends Tool.Build {
 
   protected override def isPresent(environment: Environment): Boolean = false
 
-  protected override def explodedSuffix   : String = "/target"
-  protected override def warSuffix        : String = "/target"
-  protected override def mainClassesSuffix: String = "/target/classes"
-  protected override def testClassesSuffix: String = "/target/test-classes"
-  protected override def jarsSuffix       : String = Tool.impossibleSuffix // TODO
+  protected override def explodedSuffix   : Seq[String] = Seq("target")
+  protected override def warSuffix        : Seq[String] = Seq("target")
+  protected override def mainClassesSuffix: Seq[Seq[String]] = Seq(Seq("target", "classes"))
+  protected override def testClassesSuffix: Seq[Seq[String]] = Seq(Seq("target", "test-classes"))
+  protected override def jarsSuffix       : Seq[String] = Seq(Tool.impossibleSuffix) // TODO
 
   protected override def getProjectRoot(directory: File): Option[File] =
     ancestors(directory).takeWhile(hasFile(_, "pom.xml")).lastOption

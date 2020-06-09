@@ -1,115 +1,101 @@
 plugins {
-  id "com.jfrog.bintray" version "1.7.3"
+  id 'com.github.ben-manes.versions' version '0.28.0'
+  id 'scala'
+  id 'java-library'
+  id 'maven-publish'
+  id 'com.jfrog.bintray' version '1.8.5'
 }
-
-// apply plugin: 'java-library' - if there is an issue with https://github.com/gradle/gradle/issues/1118
-apply plugin: 'scala'
-apply plugin: 'maven-publish'
-
-group = 'org.podval.tools'
-version = '0.1.2'
-
-// TODO package all package-related stuff (urls, names, etc.) into a structure.
-def packageDescription = 'Recognizes how the code is being run.'
-def packageName = 'org.podval.tools.run'
 
 repositories {
   jcenter()
 }
 
 dependencies {
-  zinc 'com.typesafe.zinc:zinc:0.3.13'
-  compile "org.scala-lang:scala-library:2.12.4"
+  api 'org.scala-lang:scala-library:2.12.11'
 }
 
-def pomConfig = {
-  description packageDescription
-  name 'podval-run'
-  url 'https://github.com/dubinsky/podval-run'
-  scm {
-    url 'https://github.com/dubinsky/podval-run'
-  }
+group = 'org.podval.tools'
+version = '0.1.3'
+description = 'Recognizes how the code is being run.'
 
-  licenses {
-    license {
-      name 'The Apache Software License, Version 2.0'
-      url 'http://www.apache.org/licenses/LICENSE-2.0.txt'
-      distribution 'repo'
-      comments 'A business-friendly OSS license'
-    }
-  }
-  organization {
-    name 'Podval Group'
-    url 'http://www.podval.org'
-  }
-  developers {
-    developer {
-      id 'dub'
-      name 'Leonid Dubinsky'
-      email 'dub@podval.org'
-      url 'http:dub.podval.org'
-      organization 'Podval Group'
-      organizationUrl 'http://www.podval.org'
-      roles {
-        role 'developer'
-      }
-      timezone '-5'
-    }
-  }
-}
+final String projectArtifact = 'org.podval.tools.run'
+final String gitHubRepository = 'dubinsky/podval-run'
+final String gitHubRepositoryUrl = "https://github.com/$gitHubRepository"
+
+jar.archiveBaseName.set(projectArtifact)
 
 task sourceJar(type: Jar) {
   from sourceSets.main.allSource
-  classifier = 'sources'
+  archiveClassifier.set('sources')
 }
 
 publishing {
   publications {
-    mavenPublication(MavenPublication) {
-      artifactId packageName
+    bintrayMavenPublication(MavenPublication) {
+      groupId project.group
+      artifactId projectArtifact
+      version project.version
 
       from components.java
+
       artifact sourceJar
 
-      pom.withXml {
-        asNode().children().last() + pomConfig
+      pom {
+        name = 'podval-run'
+        description = project.description
+        url = gitHubRepositoryUrl
+        scm {
+          url = "$gitHubRepositoryUrl"
+          connection = "scm:git:git://github.com/${gitHubRepository}.git"
+          developerConnection = "scm:git:ssh://github.com/${gitHubRepository}.git"
+        }
+        licenses {
+          license {
+            name = 'The Apache Software License, Version 2.0'
+            url = 'http://www.apache.org/licenses/LICENSE-2.0.txt'
+            distribution = 'repo'
+            comments = 'A business-friendly OSS license'
+          }
+        }
+        organization {
+          name = 'Podval Group'
+          url = 'http://www.podval.org'
+        }
+        developers {
+          developer {
+            id = 'dub'
+            name = 'Leonid Dubinsky'
+            email = 'dub@podval.org'
+            url = 'http://dub.podval.org'
+            organization = 'Podval Group'
+            organizationUrl = 'http://www.podval.org'
+            timezone = '-5'
+          }
+        }
       }
     }
   }
 }
 
 bintray {
-  user = 'dubinsky'
-  key = bintrayApiKey
-
-  publications = ['mavenPublication']
-
-//  dryRun = true
-  publish = true
-  override = false
-
+  user         = 'dubinsky'
+  key          = findProperty('bintrayApiKey')
+  publications = ['bintrayMavenPublication']
+  dryRun       = false
+  publish      = true
+  override     = true
   pkg {
-    repo = 'org.podval'
-    name = packageName
-    licenses = ['Apache-2.0']
-
-    desc = packageDescription
-    labels = ['Scala', 'Java']
-    publicDownloadNumbers = true
-
-    websiteUrl = 'https://github.com/dubinsky/podval-run'
-    issueTrackerUrl = 'https://github.com/dubinsky/podval-run/issues'
-    vcsUrl = 'https://github.com/dubinsky/podval-run.git'
-
-    githubRepo = 'dubinsky/podval-run'
-    githubReleaseNotesFile = 'README.md'
-
-    version {
-      name = project.version
-      // desc = 'Run recognizer v0.1.2'
-      // released  = new Date()
-      // vcsTag = 'v0.1.2'
-      // attributes = ['gradle-plugin': 'com.use.less:com.use.less.gradle:gradle-useless-plugin']
-    }
+    repo                   = 'org.podval'
+    name                   = 'org.podval.tools.run'
+    desc                   = project.description
+    websiteUrl             = gitHubRepositoryUrl
+    issueTrackerUrl        = "${gitHubRepositoryUrl}/issues"
+    vcsUrl                 = "${gitHubRepositoryUrl}.git"
+    githubRepo             = gitHubRepository
+    licenses               = ['Apache-2.0']
+    labels                 = ['Gradle', 'Maven', 'Intellij']
+    publicDownloadNumbers  = true
+    githubReleaseNotesFile = 'CHANGELOG.md'
+    version { name         = project.version }
   }
 }

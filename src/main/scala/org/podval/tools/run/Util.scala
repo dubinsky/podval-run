@@ -3,14 +3,19 @@ package org.podval.tools.run
 import java.io.File
 
 object Util {
-  def dropSuffix(directory: File, suffix: String): Option[File] = {
-    if (!directory.getAbsolutePath.endsWith(suffix)) None else {
-      val numberOfLevels: Int = suffix.split('/').count(!_.isEmpty)
-      var result: File = directory
-      for (_ <- 1 to numberOfLevels) result = result.getParentFile
-      Some(result)
-    }
-  }
+
+  def recognizeOneOf(directory: File, suffixes: Seq[Seq[String]]): Option[File] =
+    if (suffixes.isEmpty) None
+    else recognize(directory, suffixes.head).orElse(recognizeOneOf(directory, suffixes.tail))
+
+  @scala.annotation.tailrec
+  def recognize(directory: File, suffix: Seq[String]): Option[File] =
+    if (suffix.isEmpty) Some(directory)
+    else if (recognize(directory.getName, suffix.last)) recognize(directory.getParentFile, suffix.init)
+    else None
+
+  def recognize(directoryName: String, pattern: String): Boolean =
+    (pattern == "*") || (pattern == directoryName)
 
   def hasFile(directory: File, name: String): Boolean = directory.isDirectory && new File(directory, name).exists()
 
@@ -21,7 +26,6 @@ object Util {
     Seq(seed) ++ unfold(seed)(step1)
   }
 
-  def unfold[B, A](seed: B)(step: B => Option[(A, B)]): Seq[A] = {
+  def unfold[B, A](seed: B)(step: B => Option[(A, B)]): Seq[A] =
     step(seed).fold(Seq.empty[A]) { case (element, nextSeed) => Seq(element) ++ unfold(nextSeed)(step) }
-  }
 }

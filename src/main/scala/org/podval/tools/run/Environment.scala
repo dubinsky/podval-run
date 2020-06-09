@@ -36,7 +36,6 @@ case class Environment private(
 object Environment {
   import java.net.URLClassLoader
   import scala.collection.JavaConverters._
-  import Util.dropSuffix
 
   private val ignoredPrefixes: Set[String] = Set("java", "sun", "user", "os", "file", "path", "line", "awt")
 
@@ -64,7 +63,7 @@ object Environment {
     val jarDirectories: Set[File] = jars.map(_.getParentFile).filter(_.isDirectory)
     val directories: Set[File] = classPath.filter(_.isDirectory)
     val explodedWars: Set[File] = directories.flatMap { directory =>
-      dropSuffix(directory, "/WEB-INF/classes").orElse(dropSuffix(directory, "/WEB-INF/lib"))
+      Util.recognizeOneOf(directory, Seq(Seq("WEB-INF", "classes"), Seq("WEB-INF", "lib")))
     }
     val classPathOther: Set[File] = classPath -- directories -- jars -- wars
 

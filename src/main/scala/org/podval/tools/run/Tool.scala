@@ -8,18 +8,15 @@ sealed trait Tool {
     webApp: Option[WebApp],
     projectRootCandidates: Set[File]
   ): Option[Tool.Run] = {
-    import Util.dropSuffix
-
-    val mainClassesModules   : Set[File] = environment.directories   .flatMap(dropSuffix(_, mainClassesSuffix))
-    val testClassesModules   : Set[File] = environment.directories   .flatMap(dropSuffix(_, testClassesSuffix))
-    val jarDirectoriesModules: Set[File] = environment.jarDirectories.flatMap(dropSuffix(_, jarsSuffix))
+    val mainClassesModules   : Set[File] = environment.directories   .flatMap(Util.recognizeOneOf(_, mainClassesSuffix))
+    val testClassesModules   : Set[File] = environment.directories   .flatMap(Util.recognizeOneOf(_, testClassesSuffix))
+    val jarDirectoriesModules: Set[File] = environment.jarDirectories.flatMap(Util.recognize(_, jarsSuffix))
 
     val webAppModule: Option[File] = webApp.flatMap { _ match {
-      case WebApp.War     (root        ) => dropSuffix(root.getParentFile, warSuffix)
-      case WebApp.Exploded(root        ) => dropSuffix(root.getParentFile, explodedSuffix)
+      case WebApp.War     (root        ) => Util.recognize(root.getParentFile, warSuffix)
+      case WebApp.Exploded(root        ) => Util.recognize(root.getParentFile, explodedSuffix)
       case WebApp.Inplace (_   , module) => Some(module)
-      }
-    }
+    }}
 
     val projectRoots: Set[File] = (
       projectRootCandidates ++ getProjectRoots(environment) ++
@@ -41,11 +38,11 @@ sealed trait Tool {
     )
   }
 
-  protected def explodedSuffix   : String
-  protected def warSuffix        : String
-  protected def mainClassesSuffix: String
-  protected def testClassesSuffix: String
-  protected def jarsSuffix       : String
+  protected def explodedSuffix   : Seq[String]
+  protected def warSuffix        : Seq[String]
+  protected def mainClassesSuffix: Seq[Seq[String]]
+  protected def testClassesSuffix: Seq[Seq[String]]
+  protected def jarsSuffix       : Seq[String]
 
   protected def getProjectRoot(directory: File): Option[File]
 

@@ -12,11 +12,11 @@ object Idea extends Tool.Ide {
   // Gradle/Maven is the build tool, and Idea imports from that.
   // But, if 'Create separate module per source set' setting is checked,
   // the only way to figure out project root is by looking at Idea's classpsth :(
-  protected override def explodedSuffix   : String = Tool.impossibleSuffix
-  protected override def warSuffix        : String = Tool.impossibleSuffix
-  protected override def mainClassesSuffix: String = "/out/production/classes"
-  protected override def testClassesSuffix: String = "/out/test/classes"
-  protected override def jarsSuffix       : String = Tool.impossibleSuffix
+  protected override def explodedSuffix   : Seq[String] = Seq(Tool.impossibleSuffix)
+  protected override def warSuffix        : Seq[String] = Seq(Tool.impossibleSuffix)
+  protected override def mainClassesSuffix: Seq[Seq[String]] = Seq(Seq("out", "production", "classes"))
+  protected override def testClassesSuffix: Seq[Seq[String]] = Seq(Seq("out", "test", "classes"))
+  protected override def jarsSuffix       : Seq[String] = Seq(Tool.impossibleSuffix)
 
   protected override def getProjectRoot(directory: File): Option[File] = Some(directory)
 

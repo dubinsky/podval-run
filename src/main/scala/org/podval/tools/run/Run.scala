@@ -128,7 +128,6 @@ object Run {
   val appServers: Set[WebApp.Server] = Set(Tomcat)
 
   lazy val getDescriptor: Descriptor = {
-    import Util.dropSuffix
     import Error.atMostOne
 
     val environment: Environment = Environment.get
@@ -136,7 +135,8 @@ object Run {
     val appServer: Error.OrOption[WebApp.Server] = atMostOne("appServer"  , appServers.filter(_.isPresent(environment)))
     val wars: Set[WebApp] = environment.wars.map(WebApp.War)
     val explodedWars: Set[WebApp] = environment.explodedWars.map(directory =>
-      dropSuffix(directory, "/src/main/webapp").fold[WebApp](WebApp.Exploded(directory))(module => WebApp.Inplace(directory, module)))
+      Util.recognize(directory, Seq("src", "main", "webapp"))
+        .fold[WebApp](WebApp.Exploded(directory))(module => WebApp.Inplace(directory, module)))
     val webApp: Error.OrOption[WebApp] = atMostOne("webApp", wars ++ explodedWars)
 
     val web: Error.OrOption[WebApp.InServer] = {
