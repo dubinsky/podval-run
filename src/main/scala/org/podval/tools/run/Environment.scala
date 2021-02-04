@@ -35,7 +35,7 @@ case class Environment private(
 
 object Environment {
   import java.net.URLClassLoader
-  import scala.collection.JavaConverters._
+  import scala.jdk.CollectionConverters.PropertiesHasAsScala
 
   private val ignoredPrefixes: Set[String] = Set("java", "sun", "user", "os", "file", "path", "line", "awt")
 
@@ -70,7 +70,9 @@ object Environment {
     val properties: Map[String, String] = System.getProperties
       .asScala
       .toMap
+      .view
       .filterKeys(name => !ignoredPrefixes.exists(prefix => name.startsWith(prefix + ".")))
+      .toMap
 
     new Environment(
       javaCommand = javaCommand,

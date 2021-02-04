@@ -157,7 +157,7 @@ object Run {
     {
       val runs: Set[Tool.Run] = tools.flatMap(_.describe(environment, webAppParameter, projectRootCandidates))
       val runOrError: Error.OrOption[Tool.Run] = atMostOne(what, runs)
-      val toolOrError: Error.OrOption[T] = runOrError.right.map(_.map(_.tool.asInstanceOf[T]))
+      val toolOrError: Error.OrOption[T] = runOrError.map(_.map(_.tool.asInstanceOf[T]))
       val projectRoots: Set[File] = runOrError.getOrElse(None).map(_.projectRoots).getOrElse(Set.empty)
       (runs, toolOrError, projectRoots)
     }
