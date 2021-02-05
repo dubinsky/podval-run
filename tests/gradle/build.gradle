@@ -16,8 +16,7 @@ idea {
 
 allprojects {
   repositories {
-    jcenter()
-    mavenLocal()
+    mavenCentral()
   }
 
   group = 'org.podval.tools'
