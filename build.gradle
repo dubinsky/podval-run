@@ -41,16 +41,23 @@ jar {
   }
 }
 
-task sourceJar(type: Jar) {
+task sourcesJar(type: Jar) {
   from sourceSets.main.allSource
   archiveClassifier.set('sources')
 }
 
 task scaladocJar(type: Jar) {
   from scaladoc.destinationDir
+  archiveClassifier.set('scaladoc')
+}
+scaladocJar.dependsOn(scaladoc)
+
+// there is no Java in the project, but Maven Central requires javadoc JAR...
+task javadocJar(type: Jar) {
+  from javadoc.destinationDir
   archiveClassifier.set('javadoc')
 }
-scaladocJar.dependsOn scaladoc
+javadocJar.dependsOn(javadoc)
 
 publishing {
   repositories {
@@ -70,8 +77,9 @@ publishing {
   publications {
     library(MavenPublication) {
       from components.java
-      artifact sourceJar
+      artifact sourcesJar
       artifact scaladocJar
+      artifact javadocJar
 
       pom {
         name = project.name

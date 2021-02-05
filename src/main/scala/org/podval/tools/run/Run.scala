@@ -57,7 +57,7 @@ object Run {
 
   def get: Either[Descriptor, Run] = getDescriptor.toRun
 
-  def getProjectRoot: File = get.right.get.projectRoot.get
+  def getProjectRoot: File = get.toOption.get.projectRoot.get
 
   final case class Descriptor(
     environment: Environment,
@@ -89,21 +89,21 @@ object Run {
         isTest.isRight && isDebug.isRight
 
       if (!isValid) Left(this) else Right {
-        val ideReal: Option[Tool.Ide] = ide.right.get
-        val buildToolReal: Option[Tool.Build] = buildTool.right.get
-        val projectRootReal: Option[File] = projectRoot.right.get
-        val isDebugReal: Boolean = isDebug.right.get
+        val ideReal: Option[Tool.Ide] = ide.toOption.get
+        val buildToolReal: Option[Tool.Build] = buildTool.toOption.get
+        val projectRootReal: Option[File] = projectRoot.toOption.get
+        val isDebugReal: Boolean = isDebug.toOption.get
 
-        if (web.right.get.isDefined) {
+        if (web.toOption.get.isDefined) {
           Run.Web(
-            web = web.right.get.get,
+            web = web.toOption.get.get,
             ide = ideReal,
             buildTool = buildToolReal,
             projectRoot = projectRootReal,
             isDebug = isDebugReal
           )
         } else
-        if (isTest.right.get) {
+        if (isTest.toOption.get) {
           Run.Test(
             ide = ideReal,
             buildTool = buildToolReal,
@@ -140,11 +140,11 @@ object Run {
     val webApp: Error.OrOption[WebApp] = atMostOne("webApp", wars ++ explodedWars)
 
     val web: Error.OrOption[WebApp.InServer] = {
-      val isAppServerPresent: Boolean = appServer.isRight && appServer.right.get.nonEmpty
-      val isWebAppPresent: Boolean = webApp.isRight && webApp.right.get.nonEmpty
-      if (!isWebAppPresent && isAppServerPresent) Left(Error(s"${appServer.right.get.get} present with no WebApp?")) else
-      if (isWebAppPresent && !isAppServerPresent) Left(Error(s"${webApp.right.get.get} present with no WebApp.Server?")) else
-      if (isWebAppPresent && isAppServerPresent)  Right(Some(WebApp.InServer(webApp.right.get.get, appServer.right.get.get))) else
+      val isAppServerPresent: Boolean = appServer.isRight && appServer.toOption.get.nonEmpty
+      val isWebAppPresent: Boolean = webApp.isRight && webApp.toOption.get.nonEmpty
+      if (!isWebAppPresent && isAppServerPresent) Left(Error(s"${appServer.toOption.get.get} present with no WebApp?")) else
+      if (isWebAppPresent && !isAppServerPresent) Left(Error(s"${webApp.toOption.get.get} present with no WebApp.Server?")) else
+      if (isWebAppPresent && isAppServerPresent)  Right(Some(WebApp.InServer(webApp.toOption.get.get, appServer.toOption.get.get))) else
         Right(None)
     }
 
