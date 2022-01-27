@@ -49,7 +49,7 @@ object Environment {
       case _ =>  Seq.empty
     }
 
-    val javaClassPath: Seq[String] = getProperty("java.class.path").split(':')
+    val javaClassPath: Seq[String] = getProperty("java.class.path").split(':').toIndexedSeq
 
     val classPath: Set[File] = (classLoaderClassPath ++ javaClassPath)
       .map(path => if (path.endsWith("/")) path.init else path)

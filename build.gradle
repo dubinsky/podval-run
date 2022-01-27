@@ -1,5 +1,5 @@
 plugins {
-  id 'com.github.ben-manes.versions' version '0.36.0'
+  id 'com.github.ben-manes.versions' version '0.41.0'
   id 'scala'
   id 'java-library'
   id 'maven-publish'
@@ -20,7 +20,7 @@ repositories {
 }
 
 dependencies {
-  api 'org.scala-lang:scala-library:2.13.4'
+  api 'org.scala-lang:scala-library:2.13.8'
 }
 
 tasks.withType(ScalaCompile) {
@@ -67,10 +67,8 @@ publishing {
         'https://oss.sonatype.org/content/repositories/snapshots' :
         'https://oss.sonatype.org/service/local/staging/deploy/maven2'
 
-      credentials {
-        username = mavenCentralUsername
-        password = mavenCentralPassword
-      }
+      // Note: this will use mavenCentralUsername and mavenCentralPassword properties - if they are available
+      credentials(PasswordCredentials)
     }
   }
 
@@ -119,6 +117,6 @@ publishing {
 }
 
 signing {
-  useInMemoryPgpKeys(getProperty('gnupg.dub-podval-org.key'), getProperty('gnupg.dub-podval-org.password'))
+  useInMemoryPgpKeys(findProperty('gnupg.dub-podval-org.key'), findProperty('gnupg.dub-podval-org.password'))
   sign publishing.publications.library
 }
