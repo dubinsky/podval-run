@@ -1,3 +1,5 @@
+This is now archived; see https://dub.podval.org/2025/12/22/where-is-my-code-running.html.
+
 Sometimes, the code needs to know things about the way it is being executed.
 For instance:
 
